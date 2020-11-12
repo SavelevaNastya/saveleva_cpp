@@ -7,5 +7,5 @@
 
 using namespace std;
 
-pair<pair<size_t,size_t>,string> GetInfo(const string& );
+pair<pair<size_t, size_t>,string> GetInfo(const string& adres);
 
