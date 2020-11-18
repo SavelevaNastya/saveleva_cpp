@@ -25,14 +25,14 @@ int main(void)
 
 	int flag = 0;
 
-	bool inter = 0;
-	cout << "Choice regim of game: 0 - not interactive; 1 - interactve " << endl;
-	cin >> inter;
-
 	cout << "First generation: " << endl;
 	game.print_vector_of_char();
 
-	if (inter == 0) {
+	bool regim = 0;
+	cout << "Choice regim of game: 0 - not interactive; 1 - interactve " << endl;
+	cin >> regim;
+
+	if (regim == 0) {
 		while (flag == 0) {
 
 			game.counter_of_neighbours();
@@ -43,11 +43,12 @@ int main(void)
 				cout << "Next generation: " << endl;
 				game.print_vector_of_char();
 			}
-			//return 0;
 		}
+		return 0;
 	}else{
 
-		int iter, k = 0;
+		int iter;
+		int k = 1;
 		cout << "Enter end iter: ";
 		cin >> iter;
 
@@ -64,10 +65,5 @@ int main(void)
 			}
 			k++;
 		}
-
-		game.print_vector_of_char();
-
 	}
-	
-
 }
