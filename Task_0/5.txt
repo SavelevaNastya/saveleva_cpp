@@ -1,0 +1,48 @@
+#include <iostream>
+
+using namespace std;
+
+class A
+{
+public:
+	virtual void virt()
+	{
+		cout << "virtual function from A" << endl;
+	}
+
+	void func()
+	{
+		cout << "function from A" << endl;
+	}
+};
+
+
+class B : public A
+{
+public:
+	virtual void virt() 
+	{
+		cout << "virtual function from B" << endl;
+	}
+
+	void func()
+	{
+		cout << "function from B" << endl;
+	}
+};
+
+
+int main()
+{
+
+	A* a = new A, * b = new B;
+
+	a->virt();
+	b->virt();
+
+	a->func();
+	b->func();
+
+	delete a, b;
+
+}

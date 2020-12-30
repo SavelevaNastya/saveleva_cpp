@@ -1,0 +1,41 @@
+#include <iostream>
+#include <stdlib.h>
+
+using namespace std;
+
+struct my_stuct
+{
+	char c;
+	int a;
+	double b;
+
+	my_stuct() : c('a'), a(0), b(5.0) {}
+
+	void f()
+	{
+		cout << "i said yyyy iam blinding by the light" << endl;
+	}
+
+	~my_stuct() {}
+
+};
+
+template<typename T>
+T* my_new()
+{
+	void* pointer = malloc(sizeof(T));
+
+	if (malloc == NULL) {
+		return NULL;
+	}
+
+	T* pobj = new(pointer) T();
+	return pobj;
+}
+
+int main()
+{
+	my_stuct* a = my_new<my_stuct>();
+	a->f();
+
+}
