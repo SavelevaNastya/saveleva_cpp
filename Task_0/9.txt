@@ -1,0 +1,68 @@
+#include <iostream>
+
+using namespace std;
+
+double add(double& elem) {
+	return elem + 1;
+}
+
+double mult(double& elem) {
+	return elem * 2;
+}
+
+class dinamic_array {
+
+private:
+	int const a_size = 10;
+	double* a = new double[a_size];
+
+public:
+
+	void fill() {
+		for (int i = 0; i < a_size; i++) {
+			a[i] = i;
+		}
+	}
+
+	void iter(double(*function)(double&)) {
+		for (int i = 0; i < a_size; i++) {
+			a[i] = function(a[i]);
+		}
+	}
+
+	void access() {
+
+	}
+
+	void add_elem(double elem) {
+		int* b = new int[a_size + 1];
+		for (int i = 0; i < a_size; i++) {
+			b[i] = a[i];
+		}
+
+		b[a_size] = elem;
+		for (int i = 0; i < a_size + 1; i++) {
+			cout << b[i] << endl;
+		}
+	}
+
+	void print_arr() {
+		for (int i = 0; i < a_size; i++) {
+			cout << a[i] << endl;
+		}
+	}
+
+};
+
+
+int main() {
+	dinamic_array arr;
+	arr.fill();
+	arr.print_arr();
+	//arr.iter(add);
+	//arr.print();
+
+	//arr.add_elem(10.0);
+
+	return 0;
+}
