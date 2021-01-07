@@ -3,40 +3,30 @@
 
 using namespace std;
 
-constexpr double func(double x) {
-    return x;
-}
+double a = 0;
+double b = 1;
+#define Ai (a + curstep * (b - a) / n)
+#define Bi (Ai + (b - a) / n)
 
-constexpr double simpson(double(*function)(double), double a, double b, int n) {
+template <size_t n, size_t curstep>
+struct simpson { 
 
-    double sum = 0;
-    double g = 0;
-    double Ai = 0;
-    double Bi = 0;
-    double h = (b - a) / n;
+    inline static const double rez = (Ai + 4.0 * (Ai + Bi) / 2.0 + Bi) * (Bi - Ai) / 6.0 + simpson<100, curstep - 1>::rez;
+};
 
-    for (int i = 0; i < n; i++) {
-        Ai = a + i * h;
-        Bi = Ai + h;
-        g = (function(Ai) + 4.0 * function((Ai + Bi) / 2.0) + function(Bi)) * (Bi - Ai) / 6.0;
-        sum = sum + g;
-    }
-    
-    return sum;
-}
+template<>
+struct simpson<100, 0> {
+    inline static const double rez = 0;
+};
 
 int main()
 {
-    constexpr double a = 0; /*lower boundary of integral*/
 
-    constexpr double b = 1; /*upper boundary of integral*/
+    double integ = simpson<100, 100>::rez;
 
-    constexpr int n = 1000; /*nubmer of splits*/
+    //static_assert(simpson<100, 100>::rez < 1, "Integral calculated incorrectly");
+    //static_assert(simpson<100, 100>::rez > 0, "Integral calculated incorrectly");
 
-    constexpr double integ = simpson(func, a, b, n);
-
-    static_assert(integ < 1, "Integral calculated incorrectly");
-    static_assert(integ > 0, "Integral calculated incorrectly");
     cout << "The numerical value of the integral = " << integ << endl;
 
 }
