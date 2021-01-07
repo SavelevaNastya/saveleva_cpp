@@ -4,7 +4,7 @@
 using namespace std;
 
 constexpr double func(double x) {
-    return x; 
+    return x;
 }
 
 constexpr double simpson(double(*function)(double), double a, double b, int n) {
@@ -21,13 +21,8 @@ constexpr double simpson(double(*function)(double), double a, double b, int n) {
         g = (function(Ai) + 4.0 * function((Ai + Bi) / 2.0) + function(Bi)) * (Bi - Ai) / 6.0;
         sum = sum + g;
     }
-
-    return sum; 
-}
-
-template<typename Meth, typename Function>
-void Integrate(Function func, Meth method, double a, double b, int n) {
-    cout << "The numerical value of the integral = " << method(func, a, b, n) << endl;
+    
+    return sum;
 }
 
 int main()
@@ -35,11 +30,13 @@ int main()
     constexpr double a = 0; /*lower boundary of integral*/
 
     constexpr double b = 1; /*upper boundary of integral*/
-	
+
     constexpr int n = 1000; /*nubmer of splits*/
 
-    static_assert(simpson(func, a, b, n) < 1, "Integral calculated incorrectly");
-    static_assert(simpson(func, a, b, n) > 0, "Integral calculated incorrectly");
+    constexpr double integ = simpson(func, a, b, n);
 
-    Integrate(func, simpson, a, b, n);
+    static_assert(integ < 1, "Integral calculated incorrectly");
+    static_assert(integ > 0, "Integral calculated incorrectly");
+    cout << "The numerical value of the integral = " << integ << endl;
+
 }
