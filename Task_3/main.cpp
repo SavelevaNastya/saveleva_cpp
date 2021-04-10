@@ -3,35 +3,47 @@
 #include <string>
 
 #include "myArch.h"
-
+#include <ctime>
 using namespace std;
 
-int main()
+int main() //
 {
 	SetConsoleCP(1251);
 	SetConsoleOutputCP(1251); //Set encoding
 
 	string adres = "f:\\cpp\\tasks\\Task_3\\text\\voina_i_mir_first_tom.txt";
 	string final_name = "my_archive.txt";
-	char action = ' ';
+	char action;
 
-	//cout << "Do you want pack(P) or unpack(u)?" << endl;
-	//cin >> action;
+	cout << "Do you want pack(P) or unpack(u)?" << endl;
+	cin >> action;
 
-	myArchivator arch(action, adres, final_name);
+	myArchivator arch(adres, final_name);
 
-	arch.readTxt();
+	if (action == 'P') {
+		// Packing //
 
-	arch.BuildTree();
+		//unsigned int start_time = clock();
+		arch.readTxt();
+		//unsigned int end_time = clock();
+		//unsigned int search_time = end_time - start_time;
+		//cout << "time = " << search_time << endl; // миллисекунды
 
-	arch.HaffmansCode();
+		arch.BuildTree();
 
-	//try {
+		arch.HaffmansCode();
+
 		arch.writeToTxt();
-	//}
-	//catch (const char* exception) {
-	//	cout << "Error: " << exception << '\n';
-	//	return 0;
-	//}
-	
+	}
+	else if(action == 'u'){
+		// Unpacking //
+		arch.GetInfo();
+		
+		arch.UnPack();
+
+	}
+	else {
+		cout << "Please, try again" << endl;
+	}
+
 }

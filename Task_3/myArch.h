@@ -10,7 +10,6 @@ class myArchivator
 private:
 
 	string name;
-	char act;
 	string ad;
 
 	multimap<int, int> sortedWeight; // <вес, индекс в дереве>
@@ -31,13 +30,13 @@ private:
 
 public:
 
-	myArchivator(int act, string adres,string final_name) {
+	myArchivator(string adres,string final_name) {
 
 		this->name = final_name;
-		this->act = act;
 		this->ad = adres;
 	}
 	
+	// Packing //
 	void readTxt();
 
 	void BuildTree();
@@ -45,4 +44,11 @@ public:
 	void HaffmansCode();
 
 	void writeToTxt();
+
+	// Unpacking //
+	void GetInfo();
+
+	void UnPack();
+
+
 };
