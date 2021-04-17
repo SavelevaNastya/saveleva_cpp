@@ -9,8 +9,8 @@ class myArchivator
 {
 private:
 
-	string name;
-	string ad;
+	string* name;
+	string* ad;
 
 	multimap<int, int> sortedWeight; // <вес, индекс в дереве>
 	int weight[0x100];
@@ -29,11 +29,12 @@ private:
 
 
 public:
-
+	// Constructor
 	myArchivator(string adres,string final_name) {
 
-		this->name = final_name;
-		this->ad = adres;
+
+		this->name = &final_name;
+		this->ad = &adres;
 	}
 	
 	// Packing //
@@ -50,5 +51,24 @@ public:
 
 	void UnPack();
 
+	// Copy constructor
+	myArchivator(const myArchivator& c)
+		: myArchivator{ *c.name, *c.ad}
+	{
+		
+	}
+
+	// Move constructor
+	myArchivator(myArchivator&& c) 
+		: name{c.name}
+	{
+		c.name = nullptr;
+	}
+
+	// operator=
+	myArchivator& operator= ( const myArchivator & c) {
+		name = c.name;
+		ad = c.ad;
+	}
 
 };
