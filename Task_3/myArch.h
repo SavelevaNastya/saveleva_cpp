@@ -9,8 +9,8 @@ class myArchivator
 {
 private:
 
-	string* name;
-	string* ad;
+	string name;
+	string ad;
 
 	multimap<int, int> sortedWeight; // <вес, индекс в дереве>
 	int weight[0x100];
@@ -23,19 +23,12 @@ private:
 		bool branch;
 	};
 
-	vector<Node> tree;
+	vector<Node>* tree;
 	vector<bool> data;
 	map<char, int> charMap; //<символ, индекс в дереве>
 
 
 public:
-	// Constructor
-	myArchivator(string adres,string final_name) {
-
-
-		this->name = &final_name;
-		this->ad = &adres;
-	}
 	
 	// Packing //
 	void readTxt();
@@ -51,24 +44,48 @@ public:
 
 	void UnPack();
 
+	// Constructor
+	myArchivator(vector<Node> c) {
+
+		tree = new vector<Node>;
+		*tree = c;
+
+	}
+
 	// Copy constructor
 	myArchivator(const myArchivator& c)
-		: myArchivator{ *c.name, *c.ad}
+		: myArchivator{ *c.tree}
 	{
 		
 	}
 
 	// Move constructor
-	myArchivator(myArchivator&& c) 
-		: name{c.name}
+	myArchivator(myArchivator&& c) noexcept
+		: tree{c.tree}
 	{
-		c.name = nullptr;
+		c.tree = nullptr;
 	}
 
 	// operator=
 	myArchivator& operator= ( const myArchivator & c) {
-		name = c.name;
-		ad = c.ad;
+		tree = c.tree;
+	}
+
+	// Оператор присваивания перемещением (move assignment)
+	myArchivator& operator=(myArchivator&& c) noexcept
+	{
+		if (this == &c)
+			return *this;
+
+		delete[] tree;
+		tree = c.tree;
+		c.tree = nullptr;
+		return *this;
+	}
+
+	~myArchivator()
+	{
+		delete[] tree;
 	}
 
 };
