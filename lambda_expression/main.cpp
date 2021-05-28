@@ -1,7 +1,13 @@
 #include <iostream>
 using namespace std;
-//function is y=x
-const auto sum = [](double a, double b) { return (a + 4.0 * (a + b) / 2.0 + b)* (b - a) / 6.0; };
+
+constexpr double func(double x) {
+    return 1 / (x + 1);
+}
+
+const auto sum = [](double(*function)(double), double a, double b) { 
+    return (function(a) + 4.0 * function((a + b) / 2.0) + function(b))* (b - a) / 6.0; 
+};
 
 constexpr double simpson(double a, double b, int n) {
 
@@ -13,7 +19,7 @@ constexpr double simpson(double a, double b, int n) {
     for (int i = 0; i < n; i++) {
         Ai = a + i * h;
         Bi = Ai + h;
-        s = s + sum(Ai,Bi);
+        s = s + sum(func,Ai,Bi);
     }
 
     return s;
