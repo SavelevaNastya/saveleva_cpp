@@ -24,8 +24,11 @@ public:
     MyIntArray(const MyIntArray& c)
     {
         length = c.length;
-        data = new int();
-        *data = *c.data;
+        data = new int[length];
+        for (int i = 0; i <= length; i++) {
+            data[i] = c.data[i];
+        }
+        
 
     }
 
@@ -33,7 +36,8 @@ public:
     MyIntArray(MyIntArray&& c) noexcept
     {
         length = c.length;
-        data = std::move(c.data);
+        data = c.data;
+        c.data = nullptr;
     }
 
     // Оператор присваивания перемещением (move assignment)
@@ -54,9 +58,14 @@ public:
     {
         if (this == &c)
             return *this;
-
-        data = c.data;
+        delete[] data;
         length = c.length;
+        data = new int[length];
+
+        for (int i = 0; i <= length; i++) {
+            data[i] = c.data[i];
+        }
+
         return *this;
     }
 };
