@@ -7,6 +7,7 @@
 #include <iostream>
 #include <fstream>
 #include <qcustomplot.h>
+#include "view.h"
 
 struct States{
     double gamma;
@@ -36,7 +37,9 @@ struct Gammas{
 
 class RiemannSolver
 {
-protected:
+private:
+    QVector<class View*> subscribers;
+public:
     States state;
     Gammas gammas;
 public:
@@ -54,8 +57,11 @@ public:
     void PREFUNR(double &F,double &FD);
     void STARPU(double &P,double &U);
     void SAMPLE(double &P,double &U,double &D,double &S,double &T);
-    void Solve(const bool flag);
+    void Solve(double time);
     States GetState();
+    void subscribe(View* new_subscriber);
+    void notify();
+    double current_time;
 };
 
 #endif // RIEMANNSOLVER_H

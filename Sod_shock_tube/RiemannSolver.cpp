@@ -19,6 +19,8 @@ States RiemannSolver::GetState(){
 
 RiemannSolver::RiemannSolver()
 {
+    state.SetFromFile("data.txt");
+
     for(int i = 0;i < 4;i++){
         state.VarOnLeftSide[i] = 0.0;
         state.VarOnRightSide[i] = 0.0;
@@ -46,6 +48,7 @@ RiemannSolver::RiemannSolver()
     state.timeout = 0.2;
 
     state.dt = 0.00078125;
+    current_time = state.dt;
 }
 
 RiemannSolver::RiemannSolver(const double& uR,const double& uL,const double& pR,const double& pL,
@@ -64,6 +67,8 @@ RiemannSolver::RiemannSolver(const double& uR,const double& uL,const double& pR,
     
     state.SetFromFile(filename);
     gammas.gamma = state.gamma;
+
+
 }
 
 void RiemannSolver::GUESSP(){
@@ -243,10 +248,10 @@ void RiemannSolver::SAMPLE(double &P, double &U, double &D, double &T, double &S
     T = (P/(gammas.gamma - 1.0))/D;
 }
 
-void RiemannSolver::Solve(const bool flag){
+void RiemannSolver::Solve(double time){
     double Pef, Uef, P, U, D,T;
     double g = gammas.gamma;
-
+    current_time = time;
     gammas.gamma0 = (g - 1.0)/(2.0 * g);
     gammas.gamma1 = (g + 1.0)/(2.0 * g);
     gammas.gamma2 = (2.0 * g)/(g - 1.0);
@@ -267,19 +272,28 @@ void RiemannSolver::Solve(const bool flag){
     STARPU(Pef,Uef);
 
     double dx = state.Lenght/state.Nx;
-    double dt = state.dt;
     std::ofstream outP("P.txt");
     std::ofstream outD("D.txt");
     std::ofstream outU("U.txt");
     std::ofstream outT("T.txt");
 
-    for(double t = dt; t <= state.timeout; t+=dt){
-        for(double i = 1.0; i <= state.Nx; i++){
+    //for(double t = dt; t <= state.timeout; t+=dt){
+        for(int i = 1; i <= state.Nx; i++){
             double x = (i - state.Discontinuity)*dx;
-            double S = (x - state.Discontinuity)/t;
+            double S = (x - state.Discontinuity)/time;
 
             SAMPLE(P,U,D,T,S);
-            if( t >= state.timeout - dt && flag == 0){
+            Pressure[i - 1] = P;
+            Velocity[i - 1] = U;
+            rho[i - 1] = D;
+            Temperature[i - 1] = T;
+            Position[i - 1] = S * time + state.Discontinuity;
+            outP << S * time + state.Discontinuity << " " << P << std::endl;
+            outD << S * time + state.Discontinuity << " " << D << std::endl;
+            outU << S * time + state.Discontinuity << " " << U << std::endl;
+            outT << S * time + state.Discontinuity << " " << T << std::endl;
+
+            /*if( t >= state.timeout - dt && flag == 0){
                 Pressure.push_back(P);
                 Velocity.push_back(U);
                 rho.push_back(D);
@@ -296,14 +310,23 @@ void RiemannSolver::Solve(const bool flag){
                 rho.push_back(D);
                 Temperature.push_back(T);
                 Position.push_back(S * t + state.Discontinuity);
-            }
+            }*/
 
-        }
+        //}
     }
 
+    notify();
 }
 
+void RiemannSolver::subscribe(View* new_subscriber){
+    this->subscribers.push_back(new_subscriber);
+}
 
+void RiemannSolver::notify(){
+    for(auto it : subscribers){
+        it->update();
+    }
+}
 
 
 

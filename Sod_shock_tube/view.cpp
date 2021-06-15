@@ -1,9 +1,9 @@
 #include "view.h"
 #include "ui_view.h"
 
-View::View(QWidget *parent): QMainWindow(parent)
-    , ui(new Ui::View)
+View::View(RiemannSolver * modelPtr, QWidget *parent): QMainWindow(parent), ui(new Ui::View)
 {
+    model = modelPtr;
     ui->setupUi(this);
 }
 
@@ -15,7 +15,7 @@ View::~View()
 void View::Rendering(const RiemannSolver & solver){
     ui->DensityPlot->clearGraphs();
     ui->DensityPlot->addGraph();
-    ui->DensityPlot->graph(0)->setData(solver.Position,solver.rho);
+    ui->DensityPlot->graph(0)->setData(solver.Position, solver.rho);
     ui->DensityPlot->xAxis->setRange(ui->Lmin->text().toDouble(), ui->Lmax->text().toDouble());
     ui->DensityPlot->yAxis->setRange(*std::min_element(solver.rho.begin(),solver.rho.end())
                                      ,*std::max_element(solver.rho.begin(),solver.rho.end()));
@@ -84,9 +84,9 @@ void View::Rendering( const QVector<double> & Pos,const QVector<double> & P,cons
                                      ,*std::max_element(U.begin(),U.end()));
     ui->VelocityPlot->replot();
 }
+
 void View::on_Calculate_clicked()
 {
-
     double uL = ui->VelocityLeft->text().toDouble();
     double uR = ui->VelocityRight->text().toDouble();
     double pL = ui->PressureLeft->text().toDouble();
@@ -96,12 +96,27 @@ void View::on_Calculate_clicked()
     int Nx = ui->Nx->text().toInt();
     double leght = ui->Lmax->text().toDouble() - ui->Lmin->text().toDouble();
 
-    RiemannSolver solver(uR,uL,pR,pL,dR,dL,Nx,leght,"data.txt");
-    time = state.timeout;
-    solver.Solve(0);
+    model->state.Nx = Nx;
+    model->state.MPa = 1.0;
+    model->state.Lenght = leght;
+    model->state.VarOnLeftSide[0] = dL;
+    model->state.VarOnLeftSide[1] = uL;
+    model->state.VarOnLeftSide[2] = pL;
 
-    Rendering(solver);
+    model->state.VarOnRightSide[0] = dR;
+    model->state.VarOnRightSide[1] = uR;
+    model->state.VarOnRightSide[2] = pR;
 
+    model->gammas.gamma = model->state.gamma;
+    double time = model->state.timeout;
+
+    model->Pressure.resize(Nx);
+    model->Velocity.resize(Nx);
+    model->rho.resize(Nx);
+    model->Temperature.resize(Nx);
+    model->Position.resize(Nx);
+
+    model->Solve(time);
 }
 
 void View::on_Play_clicked()
@@ -115,19 +130,37 @@ void View::on_Play_clicked()
     int Nx = ui->Nx->text().toInt();
     double length = ui->Lmax->text().toDouble() - ui->Lmin->text().toDouble();
 
-    RiemannSolver solver(uR,uL,pR,pL,dR,dL,Nx,length,"data.txt");
+    model->state.Nx = Nx;
+    model->state.MPa = 1.0;
+    model->state.Lenght = length;
+    model->state.VarOnLeftSide[0] = dL;
+    model->state.VarOnLeftSide[1] = uL;
+    model->state.VarOnLeftSide[2] = pL;
 
-    solver.Solve(1);
+    model->state.VarOnRightSide[0] = dR;
+    model->state.VarOnRightSide[1] = uR;
+    model->state.VarOnRightSide[2] = pR;
+
+    model->state.SetFromFile("data.txt");
+
+    model->gammas.gamma = model->state.gamma;
+    double timeout = model->state.timeout;
+
     ui->Stop->setEnabled(true);
-    time = 0;
     flag = true;
-    double dt = solver.GetState().dt;
-    double timeout = solver.GetState().timeout;
+    double dt = model->state.dt;
+    double time = 0;
     int N = timeout/dt;
 
-    for(int i = 0; i < N - 1; i++){
+    model->Pressure.resize(Nx);
+    model->Velocity.resize(Nx);
+    model->rho.resize(Nx);
+    model->Temperature.resize(Nx);
+    model->Position.resize(Nx);
 
-        QVector<double> Pos(Nx);
+    for(int i = 1; i <= N; i++){
+
+        /*QVector<double> Pos(Nx);
         QVector<double> Press(Nx);
         QVector<double> Temp(Nx);
         QVector<double> Vel(Nx);
@@ -139,10 +172,10 @@ void View::on_Play_clicked()
             Temp[j] = solver.Temperature[j + i*Nx];
             Vel[j] = solver.Velocity[j + i*Nx];
             Den[j] = solver.rho[j + i*Nx];
-        }
+        }*/
 
         time = i*dt;
-        Rendering(Pos,Press,Vel,Temp,Den);
+        model->Solve(time);
         QCoreApplication::processEvents(QEventLoop::AllEvents);
 
         if(flag == false){
@@ -163,41 +196,36 @@ void View::on_Right_clicked()
     int Nx = ui->Nx->text().toInt();
     double leght = ui->Lmax->text().toDouble() - ui->Lmin->text().toDouble();
 
-    RiemannSolver solver(uR,uL,pR,pL,dR,dL,Nx,leght,"data.txt");
+    model->state.Nx = Nx;
+    model->state.MPa = 1.0;
+    model->state.Lenght = leght;
+    model->state.VarOnLeftSide[0] = dL;
+    model->state.VarOnLeftSide[1] = uL;
+    model->state.VarOnLeftSide[2] = pL;
 
-    solver.Solve(1);
-    double dt = state.dt;
-    double timeout = state.timeout;
+    model->state.VarOnRightSide[0] = dR;
+    model->state.VarOnRightSide[1] = uR;
+    model->state.VarOnRightSide[2] = pR;
 
+    model->gammas.gamma = model->state.gamma;
+    double timeout = model->state.timeout;
+    double cur_time = model->current_time;
 
-    time+=dt;
-    int i = time/dt - 1;
+    model->Pressure.resize(Nx);
+    model->Velocity.resize(Nx);
+    model->rho.resize(Nx);
+    model->Temperature.resize(Nx);
+    model->Position.resize(Nx);
 
-    QVector<double> Pos(Nx);
-    QVector<double> Press(Nx);
-    QVector<double> Temp(Nx);
-    QVector<double> Vel(Nx);
-    QVector<double> Den(Nx);
-
-    if (time >= timeout){
+    if (cur_time - model->state.dt >= timeout){
         ui->Right->setEnabled(false);
-        time = timeout;
+        cur_time = timeout;
         return;
     }
-    if(time > 0){
+    if(cur_time > 0){
         ui->Left->setEnabled(true);
     }
-
-    for(int j = 0; j < Nx; j++){
-        Pos[j] = solver.Position[j + i*Nx];
-        Press[j] = solver.Pressure[j + i*Nx];
-        Temp[j] = solver.Temperature[j + i*Nx];
-        Vel[j] = solver.Velocity[j + i*Nx];
-        Den[j] = solver.rho[j + i*Nx];
-    }
-
-    Rendering(Pos,Press,Vel,Temp,Den);
-
+    model->Solve(cur_time + model->state.dt);
 
 }
 
@@ -212,37 +240,32 @@ void View::on_Left_clicked()
     int Nx = ui->Nx->text().toInt();
     double leght = ui->Lmax->text().toDouble() - ui->Lmin->text().toDouble();
 
-    RiemannSolver solver(uR,uL,pR,pL,dR,dL,Nx,leght,"data.txt");
+    model->state.Nx = Nx;
+    model->state.MPa = 1.0;
+    model->state.Lenght = leght;
+    model->state.VarOnLeftSide[0] = dL;
+    model->state.VarOnLeftSide[1] = uL;
+    model->state.VarOnLeftSide[2] = pL;
 
-    solver.Solve(1);
-    double dt = state.dt;
-    double timeout = state.timeout;
-    time-=dt;
-    int i = time/dt - 1;
+    model->state.VarOnRightSide[0] = dR;
+    model->state.VarOnRightSide[1] = uR;
+    model->state.VarOnRightSide[2] = pR;
 
-    QVector<double> Pos(Nx);
-    QVector<double> Press(Nx);
-    QVector<double> Temp(Nx);
-    QVector<double> Vel(Nx);
-    QVector<double> Den(Nx);
+    model->gammas.gamma = model->state.gamma;
+    double timeout = model->state.timeout;
+    double cur_time = model->current_time;
 
-    if (time < 0){
-        ui->Left->setEnabled(false);
-        return;
+    model->Pressure.resize(Nx);
+    model->Velocity.resize(Nx);
+    model->rho.resize(Nx);
+    model->Temperature.resize(Nx);
+    model->Position.resize(Nx);
+
+
+    if(cur_time >= model->state.dt){
+        cur_time -= model->state.dt;
     }
-    if(time < timeout){
-        ui->Right->setEnabled(true);
-    }
-
-    for(int j = 0; j < Nx; j++){
-        Pos[j] = solver.Position[j + i*Nx];
-        Press[j] = solver.Pressure[j + i*Nx];
-        Temp[j] = solver.Temperature[j + i*Nx];
-        Vel[j] = solver.Velocity[j + i*Nx];
-        Den[j] = solver.rho[j + i*Nx];
-    }
-
-    Rendering(Pos,Press,Vel,Temp,Den);
+    model->Solve(cur_time);
 
 }
 
@@ -250,4 +273,8 @@ void View::on_Left_clicked()
 void View::on_Stop_clicked()
 {
     flag = false;
+}
+
+void View::update(){
+    Rendering(*model);
 }
