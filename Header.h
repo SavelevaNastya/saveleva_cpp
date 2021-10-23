@@ -11,31 +11,55 @@ enum Nucleotide
 class RNK {
 private:
 	size_t size;
-	int* root;
-	friend class nuclref;
+	//int* root;
+	size_t* NuclArray;
+	size_t capacity;
 public:
+	/* NUCLREF*/ 
+	class nuclref {
+		size_t nucl_idx;
+		//int* root; // BAD!!!
+		RNK* rnk;
+	public:
+		nuclref(RNK* rnk, size_t nucl_idx);//done
+		nuclref& operator=(Nucleotide nucl);
+		nuclref& operator=(const nuclref nuclref);//done
+		operator Nucleotide() const;
+	};
+
 	/*OPERATOR =*/
-	
-	nuclref operator[] (size_t idx);
+	RNK& operator=(const RNK&);
+
+	/*OPERATOR []*/ //done
+	nuclref operator[](size_t idx);
 
 	/*OPERATOR +*/
-	RNK operator+(RNK& r1, RNK& r2);
+	RNK operator+(const RNK& r1, const RNK& r2);
 
 	/*OPERATOR ==*/
-	bool operator==(const RNK & r1, const RNK & r2);
+	bool operator==(const RNK & r1) const; //done
 
 	/*OPERATOR !=*/
-	bool operator!=(RNK& r1, RNK& r2);
+	bool operator!=(const RNK& r1) const;//done
 
 	/*OPERATOR !*/
-	RNK operator!(RNK& r1);
+	void operator!();
+	
+	/*Constructors*/
+	RNK();
+	RNK(Nucleotide nucl, size_t size);
+	RNK(const RNK& rnk);
+	RNK(RNK&& rnk);
 
-	RNK(const& RNK);
-	bool isComplementary(RNK&);
-	void split(size_t index);
-	~RNK();
+	/*Methods*/
+	size_t* FillNuclArray(size_t size);
+	bool isComplementary(const RNK& rnk);
+	std::pair<RNK, RNK> split(size_t index);//done
+	void append(const Nucleotide& nucl);
+
+	~RNK();//done
 };
-
+//done
 class DNK
 {
 private:
@@ -44,11 +68,3 @@ public:
 	DNK(RNK& first_rnk, RNK& second_rnk);
 };
 
-class nuclref{
-private:
-	size_t nucl_idx;
-	//int* root;
-	RNK* This;
-public:
-	nuclref(RNK* rnk, size_t num);
-};
